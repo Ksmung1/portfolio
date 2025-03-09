@@ -1,0 +1,53 @@
+* {
+  box-sizing: border-box;
+  margin: 0px;
+  paddig: 0px;
+  background: black;
+  color: white;
+  font-family: sans-serif;
+}
+body {
+  margin: 0px;
+  padding: 0px;
+}
+
+.fixed {
+  position: fixed;
+}
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+.flex-row {
+  display: flex;
+  flex-direction: row;
+}
+
+.db {
+  display: block;
+}
+.mid {
+  align-items: center;
+}
+.relative {
+  position: relative;
+}
+.fs24 {
+  font-size: 24px;
+}
+.fs20 {
+  font-size: 20px;
+}
+#root {
+  margin: 50px 0;
+}
+.gap {
+  gap: 15px;
+}
+
+.absolute {
+  position: absolute;
+}
+.width {
+  width: 100%;
+}

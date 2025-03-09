@@ -1,0 +1,72 @@
+.portfolio-screen {
+  width: 100%;
+  margin: 0;
+  padding: 20px;
+  gap: 35px;
+}
+.portfolio-screen h1 {
+  font-size: 2.5rem;
+  letter-spacing: 2px;
+}
+.portfolio-screen .container {
+  width: 100%;
+}
+.portfolio-screen .container .box {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-self: center;
+  justify-content: center;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.portfolio-screen .container .box .coin-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: gray;
+}
+.portfolio-screen .container .box .heading {
+  font-weight: bold;
+  font-size: 20px;
+  border-bottom: 2px solid black; /* Bottom border for headings */
+  background-color: #e0e0e0;
+}
+.portfolio-screen .container .box .coin-row span {
+  padding: 10px;
+  background: rgb(73, 74, 74);
+}
+.portfolio-screen .container .box .coin-row p {
+  background: rgb(73, 74, 74);
+  padding-top: 5px;
+}
+
+.portfolio-screen .container .box .coin-amount {
+  text-align: center;
+  color: rgb(255, 255, 255);
+}
+
+.portfolio-screen .container .box .coin-name {
+  color: rgb(0, 255, 0);
+}
+
+.auth-screen {
+  top: 200px;
+  gap: 10px;
+}
+.auth-screen p {
+  font-size: 16px;
+  font-weight: 600;
+}
+.auth-screen input {
+  border: 1px solid white;
+  padding: 7px;
+}
+.auth-screen button {
+  border: 1px solid white;
+  padding: 7px;
+  background: black;
+  cursor: pointer;
+}

@@ -1,13 +1,24 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
+import App from './components/App';
 import reportWebVitals from './reportWebVitals';
+import {BrowserRouter as Router,Route, Routes,  } from "react-router-dom";
+import PrivateRoute from './context/PrivateRoute';
+import { UserProvider } from './context/UserContext';
+
+import Authentication from './components/Authentication';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <App />
+    <UserProvider>
+    <Router>
+    <Routes>
+      <Route path='/' element={<Authentication />}/>
+      <Route path='/dashboard' element={<PrivateRoute><App/></PrivateRoute>}/>
+    </Routes>
+    </Router>
+    </UserProvider>
   </React.StrictMode>
 );
 
