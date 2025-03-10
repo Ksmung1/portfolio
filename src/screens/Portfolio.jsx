@@ -5,22 +5,22 @@ const portfolioData = [
     label: "ALTCOINS",
     coins: [
       { name: "Coin", amount: "Amount", isHeading: true },
-      { name: "KLV", amount: 2 },
+      { name: "KLV", amount: "soon" },
     ],
   },
   {
           label: "PRE-SALE Projects",
           coins: [
             { name: "Coin", amount: "Amount", isHeading: true },
-            { name: "KLV", amount: 2 },
+            { name: "FROX", amount: "soon" },
           ],
         },
   {
     label: "FUTURE TRADING",
     coins: [
       { name: "Coin", amount: "Amount", isHeading: true },
-      { name: "USDT", amount: 1000 },
-      { name: "USDC", amount: 500 },
+      { name: "USDT", amount: "soon" },
+      { name: "USDC", amount: "soon" },
     ],
   },
   {

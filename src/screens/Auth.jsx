@@ -9,7 +9,7 @@ const Auth = () => {
   const [welcomeText, setWelcomeText] = useState("");
   const [promptText, setPromptText] = useState("");
 
-  const welcomeMessage = "Welcome to WhaleClub.";
+  const welcomeMessage = "Welcome to VIP Club.";
   const promptMessage = "Please enter your Code|";
 
   // Typewriter effect function (FIXED)
@@ -60,7 +60,7 @@ const Auth = () => {
         value={code}
         onChange={(e) => setCode(e.target.value)}
       />
-      <button onClick={handleClick}>Verify Code</button>
+      <button onClick={handleClick}>Secret Code</button>
     </div>
   );
 };
