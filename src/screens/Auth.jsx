@@ -8,18 +8,19 @@ const Auth = () => {
   const [code, setCode] = useState("");
   const [welcomeText, setWelcomeText] = useState("");
   const [promptText, setPromptText] = useState("");
+  const [showCursor, setShowCursor] = useState(false); // To handle blinking cursor
 
-  const welcomeMessage = "Welcome to VIP Club.";
-  const promptMessage = "Please enter your Code|";
+  const welcomeMessage = "Welcome to VIP Club!";
+  const promptMessage = "Please enter your Code";
 
-  // Typewriter effect function (FIXED)
+  // Typewriter effect function
   const typeWriter = (message, setter, onComplete) => {
     let index = 0;
-    let text = ""; // Store text separately to prevent React's async update issue
+    let text = "";
 
     const interval = setInterval(() => {
-      text += message.charAt(index); // Append one character at a time
-      setter(text); // Update state with the new string
+      text += message.charAt(index);
+      setter(text);
       index++;
 
       if (index >= message.length) {
@@ -29,10 +30,11 @@ const Auth = () => {
     }, 50);
   };
 
-  // Start animations in order
   useEffect(() => {
     typeWriter(welcomeMessage, setWelcomeText, () => {
-      typeWriter(promptMessage, setPromptText);
+      typeWriter(promptMessage, setPromptText, () => {
+        setShowCursor(true); // Show blinking cursor after typing
+      });
     });
   }, []);
 
@@ -43,15 +45,18 @@ const Auth = () => {
     } else {
       alert("Incorrect Code. Unauthorized!");
       setUser(null);
-      setCode("")
+      setCode("");
       nav("/");
     }
   };
 
   return (
     <div className="auth-screen flex-col mid relative">
-      <p className="typewriter-text">{welcomeText}</p>
-      <p className="typewriter-text">{promptText}</p>
+      <p className="typewriter-text type-text-1">{welcomeText}</p>
+      <p className="typewriter-text">
+        {promptText}
+        {showCursor && <span className="blinking">|</span>}
+      </p>
       <input
         type="password"
         name="login-code"
