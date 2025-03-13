@@ -35,7 +35,7 @@ const portfolioData = [
     coins: [{ name: "USDT", amount: "$1000" }],
   },
   {
-    label: "ASSET VALUE",
+    label: "TOTAL ASSET VALUE",
     coins: [
       { name: "Coin", amount: "Amount", isHeading: true },
       { name: "KLV", amount: "Soon" },
