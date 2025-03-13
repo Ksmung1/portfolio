@@ -1,13 +1,14 @@
 import '../css/App.css';
 import '../css/props.css';
 
-import Header from '../screens/Header';
+//screens
 import Portfolio from '../screens/Portfolio';
+import Deposits from '../screens/Deposits';
 function App() {
   return (
    
     <div className="App">
-      <Header></Header>
+      <Deposits />
       <Portfolio></Portfolio>
     </div>
   );

@@ -10,8 +10,9 @@ const Auth = () => {
   const [promptText, setPromptText] = useState("");
   const [showCursor, setShowCursor] = useState(false); // To handle blinking cursor
 
-  const welcomeMessage = "Welcome to VIP Club!";
-  const promptMessage = "Please enter your Code";
+  const welcomeMessage = "Hello, this is Black Diamond, \n your trusted Fund Manager! ";
+
+  const promptMessage = `Please enter your Code.`;
 
   // Typewriter effect function
   const typeWriter = (message, setter, onComplete) => {
@@ -36,7 +37,7 @@ const Auth = () => {
         setShowCursor(true); // Show blinking cursor after typing
       });
     });
-  }, []);
+  }, [promptMessage]);
 
   const handleClick = () => {
     if (code === "007") {
@@ -52,8 +53,9 @@ const Auth = () => {
 
   return (
     <div className="auth-screen flex-col mid relative">
-      <p className="typewriter-text type-text-1">{welcomeText}</p>
-      <p className="typewriter-text">
+      <img src="/image2.jpg" alt="imafe" />
+      <p className="typewriter-text type-text-1" style={{whiteSpace:"pre-line"}}>{welcomeText}</p>
+      <p className="typewriter-text" style={{whiteSpace:"pre-line", textAlign: 'center'}}>
         {promptText}
         {showCursor && <span className="blinking">|</span>}
       </p>
