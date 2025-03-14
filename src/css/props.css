@@ -63,3 +63,6 @@ body {
     opacity: 0;
   }
 }
+.point {
+  cursor: pointer;
+}

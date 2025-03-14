@@ -43,14 +43,22 @@
   border-radius: 10px;
   overflow: hidden;
 }
-.coin-row[data-has-date="true"] {
+/* ✅ 3 columns when date exists */
+.coin-row[data-has-date="true"][data-has-invested="false"][data-has-ppt="false"] {
   grid-template-columns: 1fr 1fr 1fr;
 }
 
+/* ✅ 4 columns when Invested or PPT exists */
+.coin-row[data-has-invested="true"],
+.coin-row[data-has-ppt="true"] {
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+}
+
 /* ✅ 2 columns for items with only name and amount */
-.coin-row[data-has-date="false"] {
+.coin-row[data-has-date="false"][data-has-invested="false"][data-has-ppt="false"] {
   grid-template-columns: 1fr 1fr;
 }
+
 .portfolio-screen .container .box .coin-row {
   display: grid;
   align-items: center;
@@ -66,12 +74,18 @@
   background-color: #e0e0e0;
 }
 .portfolio-screen .container .box .coin-row span {
-  padding: 10px;
+  padding: 5px;
+  height: 40px;
+  align-items: center;
   background: rgb(73, 74, 74);
+}
+.coin-row span {
+  font-size: 12px;
+  height: 30px;
 }
 .portfolio-screen .container .box .coin-row p {
   background: rgb(73, 74, 74);
-  padding-top: 5px;
+  padding-top: 2px;
 }
 
 .portfolio-screen .container .box .coin-amount {
@@ -91,7 +105,7 @@
 }
 .auth-screen p {
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 200;
 }
 .auth-screen input {
   border: 1px solid white;
@@ -105,4 +119,49 @@
 }
 /* Desposits-SCREEN */
 .deposits {
+}
+.about-screen {
+  margin: 100px 20px;
+  text-align: left;
+}
+.about-screen h1,
+.about-screen h2,
+.about-screen h3 {
+  text-align: left;
+  width: 100%;
+  line-height: 60px;
+}
+.about-screen p {
+  font-size: 14px;
+}
+.about-screen li {
+  font-size: 14px;
+}
+.about-screen h1 {
+  font-size: 20px;
+}
+.about-screen h2 {
+  font-size: 16px;
+}
+.about-screen h3 {
+  font-size: 20px;
+  font-weight: 200;
+  margin-top: 40px;
+  line-height: 30px;
+}
+.about-screen .image-container {
+  flex-wrap: wrap;
+  justify-content: space-between;
+  width: 100%;
+  gap: 10px;
+}
+
+.about-screen .image-container img {
+  flex: 1; /* Makes all images grow evenly */
+  max-width: calc(25% - 10px);
+  width: 100%;
+}
+
+.email a {
+  text-decoration: underline !important;
 }

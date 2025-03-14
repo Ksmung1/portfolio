@@ -68,7 +68,10 @@ const Auth = () => {
         onChange={(e) => setCode(e.target.value)}
       />
       <button onClick={handleClick}>Secret Code</button>
+      <p onClick={()=>nav('/about')} className="point " style={{border: '1px solid white', padding:'5px', borderRadius:'10px', marginTop:'100px'}}>More about me...</p>
+
     </div>
+    
   );
 };
 

@@ -5,14 +5,14 @@ const portfolioData = [
     label: "DEPOSITS",
     coins: [
       { date: "Date", name: "Coin", amount: "Quantity", isHeading: true },
-      { date: "13/03/2025", name: "USDT", amount: "$1000" },
+      { date: "13/03/25", name: "USDT", amount: "$1000" },
     ],
   },
   {
     label: "CRYPTO",
     coins: [
-      { name: "Coin", amount: "Quantity", isHeading: true },
-      { name: "XRP", amount: "Soon" },
+      { date:'Date', invested:'Invested ($)',ppt:'Price Per Token ($)', name: "Coins", amount: "Quantity", isHeading: true },
+      { date:'14/03/25',invested:'500',ppt:'0.002317', name: "KLV", amount: "215796" },
     ],
   },
   {
@@ -32,54 +32,69 @@ const portfolioData = [
   },
   {
     label: "RESERVED DOLLAR",
-    coins: [{ name: "USDT", amount: "$1000" }],
+    coins: [{ name: "USDT", amount: "$500" }],
   },
-  {
-    label: "TOTAL ASSET VALUE",
-    coins: [
-      { name: "Coin", amount: "Amount", isHeading: true },
-      { name: "KLV", amount: "Soon" },
-    ],
-  },
+
 ];
 
 const Portfolio = () => {
   return (
-    <div className="portfolio-screen flex-col mid relative">
+    <div className="portfolio-screen flex-col mid">
       <h1>PORTFOLIO</h1>
       <h2>VIP 007</h2>
 
-      {portfolioData.map((container, index) => (
-        <div key={index} className="container flex-col mid">
-          <div className="label">
-            <p>{container.label}</p>
-          </div>
 
-          <div className="box">
-            {/* ✅ Render heading row only if it exists */}
-            {container.coins.some((coin) => coin.isHeading) && (
-              <div className="coin-row heading" data-has-date={container.coins[0].date ? "true" : "false"}>
-                {container.coins[0].date && <span className="coin-date">{container.coins[0].date}</span>}
-                <span className="coin-name">{container.coins[0].name}</span>
-                <span className="coin-amount">{container.coins[0].amount}</span>
-              </div>
-            )}
+      {portfolioData.map((container, index) => {
+        // Get all keys dynamically
+        const allKeys = [...new Set(container.coins.flatMap(Object.keys))].filter((key) => key !== "isHeading");
 
-            {/* ✅ Map through the remaining coins (excluding heading) */}
-            {container.coins
-              .filter((coin) => !coin.isHeading)
-              .map((coin, i) => (
-                <div key={i} className="coin-row" data-has-date={coin.date ? "true" : "false"}>
-                  {coin.date && <span className="coin-date">{coin.date}</span>}
-                  <span className="coin-name">{coin.name}</span>
-                  <span className="coin-amount">{coin.amount}</span>
+        return (
+          <div key={index} className="container">
+            <div className="label">
+              <p>{container.label}</p>
+            </div>
+
+            <div className="box">
+              {/* ✅ Render Heading Row */}
+              {container.coins.some((coin) => coin.isHeading) && (
+                <div
+                  className="coin-row heading mid"
+                  data-has-date={allKeys.includes("date") ? "true" : "false"}
+                  data-has-invested={allKeys.includes("invested") ? "true" : "false"}
+                  data-has-ppt={allKeys.includes("ppt") ? "true" : "false"}
+                >
+                  {allKeys.map((key, i) => (
+                    <span key={i} className={`coin-${key}`}>{container.coins[0][key] || "-"}</span>
+                  ))}
                 </div>
-              ))}
+              )}
+
+              {/* ✅ Render Data Rows */}
+              {container.coins
+                .filter((coin) => !coin.isHeading)
+                .map((coin, i) => (
+                  <div
+                    key={i}
+                    className="coin-row mid"
+                    data-has-date={allKeys.includes("date") ? "true" : "false"}
+                    data-has-invested={allKeys.includes("invested") ? "true" : "false"}
+                    data-has-ppt={allKeys.includes("ppt") ? "true" : "false"}
+                  >
+                    {allKeys.map((key, j) => (
+                      <span key={j} className={`coin-${key}`}>{coin[key] || "-"}</span>
+                    ))}
+                  </div>
+                ))}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
+
+    <div className="label flex-row gap" style={{background:'green', padding:'10px'}}><p style={{background: 'green'}} className="left">TOTAL ASSETS VALUE</p>
+    <p ><strong style={{background: 'green'}}>$1000</strong></p></div>
     </div>
   );
 };
+
 
 export default Portfolio;

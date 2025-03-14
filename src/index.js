@@ -7,6 +7,7 @@ import PrivateRoute from './context/PrivateRoute';
 import { UserProvider } from './context/UserContext';
 
 import Authentication from './components/Authentication';
+import About from './screens/About';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -16,6 +17,7 @@ root.render(
     <Routes>
       <Route path='/' element={<Authentication />}/>
       <Route path='/dashboard' element={<PrivateRoute><App/></PrivateRoute>}/>
+      <Route path='/about' element={<About/>}/>
     </Routes>
     </Router>
     </UserProvider>
