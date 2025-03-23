@@ -77,7 +77,7 @@ const Portfolio = () => {
         name: "KLV", 
         invested: investedAmounts.find(coin => coin.name === "KLV")?.invested || 0, 
         fill: 'blue'
-      }
+      },
       { 
         name: "KLV", 
         invested: 0,
