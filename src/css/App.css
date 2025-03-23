@@ -73,6 +73,10 @@
   border-bottom: 1px solid white;
 }
 
+.portfolio-screen .label {
+  margin-bottom: 20px;
+}
+
 .portfolio-screen .container .box .heading {
   font-weight: 600;
   font-size: 15px;
