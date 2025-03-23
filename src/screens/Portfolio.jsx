@@ -79,7 +79,7 @@ const Portfolio = () => {
         fill: 'blue'
       },
       { 
-        name: "KLV", 
+        name: "USDT", 
         invested: 0,
         fill: 'white'
       }
