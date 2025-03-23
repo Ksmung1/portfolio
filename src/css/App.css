@@ -40,8 +40,8 @@
   align-self: center;
   gap: 0px;
   justify-content: center;
-  border-radius: 10px;
   overflow: hidden;
+  border: 1px solid white;
 }
 /* ✅ 3 columns when date exists */
 .coin-row[data-has-date="true"][data-has-invested="false"][data-has-ppt="false"] {
@@ -53,9 +53,14 @@
 .coin-row[data-has-ppt="true"] {
   grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
 }
+.coin-row[data-has-invested="true"],
+.coin-row[data-has-ppt="true"],
+.coin-row[data-has-currentPrice="true"] {
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+}
 
 /* ✅ 2 columns for items with only name and amount */
-.coin-row[data-has-date="false"][data-has-invested="false"][data-has-ppt="false"] {
+.coin-row[data-has-date="false"][data-has-invested="false"][data-has-ppt="false"][data-has-currentPrice="false"] {
   grid-template-columns: 1fr 1fr;
 }
 
@@ -64,20 +69,23 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  background: gray;
+  background: black;
+  border-bottom: 1px solid white;
 }
 
 .portfolio-screen .container .box .heading {
   font-weight: 600;
   font-size: 15px;
-  border-bottom: 2px solid black; /* Bottom border for headings */
-  background-color: #e0e0e0;
+  border-bottom: 1px solid white; /* Bottom border for headings */
 }
 .portfolio-screen .container .box .coin-row span {
   padding: 5px;
   height: 40px;
   align-items: center;
-  background: rgb(73, 74, 74);
+  background: rgb(0, 0, 0);
+  align-self: center;
+  display: flex;
+  justify-content: center;
 }
 .coin-row span {
   font-size: 12px;
@@ -95,7 +103,7 @@
 .portfolio-screen .container .box .heading .coin-name {
   color: rgb(255, 255, 255);
 }
-.portfolio-screen .container .box .coin-name {
+.portfolio-screen .container .box .coin-row:not(.heading) .coin-currentPrice {
   color: rgb(0, 255, 0);
 }
 

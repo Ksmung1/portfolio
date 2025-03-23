@@ -53,7 +53,7 @@ const Auth = () => {
 
   return (
     <div className="auth-screen flex-col mid relative">
-      <img src="/image2.jpg" alt="imafe" />
+      <img src="/black-diamond.png"  alt="imafe" style={{marginBottom:'60px'}}/>
       <p className="typewriter-text type-text-1" style={{whiteSpace:"pre-line"}}>{welcomeText}</p>
       <p className="typewriter-text" style={{whiteSpace:"pre-line", textAlign: 'center'}}>
         {promptText}
