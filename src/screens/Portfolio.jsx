@@ -78,6 +78,11 @@ const Portfolio = () => {
         invested: investedAmounts.find(coin => coin.name === "KLV")?.invested || 0, 
         fill: 'blue'
       }
+      { 
+        name: "KLV", 
+        invested: 0,
+        fill: 'white'
+      }
     ];
     
   const calculateProfit = () => {
@@ -181,16 +186,6 @@ const Portfolio = () => {
         );
       })}
 
-      <div className="label flex-row gap" style={{ background: "green", padding: "10px" }}>
-        <p style={{ background: "green" }} className="left">TOTAL ASSETS VALUE</p>
-        <p><strong style={{ background: "green" }}>{totalValue}</strong></p>
-      </div>
-
-      <div className="label flex-row gap" style={{ background: profitLoss < 0 ? "red" : "green", padding: "10px" }}>
-  <p style={{ background: profitLoss < 0 ? "red" : "green" }} className="left">PROFIT/LOSS</p>
-  <p><strong style={{ background: profitLoss < 0 ? "red" : "green" }}>${profitLoss}</strong></p>
-</div>
-
 <ResponsiveContainer width="100%" height={300}>
   <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
     <XAxis dataKey="name" />
@@ -202,6 +197,18 @@ const Portfolio = () => {
 />
   </BarChart>
 </ResponsiveContainer>
+
+      <div className="label flex-row gap" style={{ background: "green", padding: "10px" }}>
+        <p style={{ background: "green" }} className="left">TOTAL ASSETS VALUE</p>
+        <p><strong style={{ background: "green" }}>{totalValue}</strong></p>
+      </div>
+
+      <div className="label flex-row gap" style={{ background: profitLoss < 0 ? "red" : "green", padding: "10px" }}>
+  <p style={{ background: profitLoss < 0 ? "red" : "green" }} className="left">PROFIT/LOSS</p>
+  <p><strong style={{ background: profitLoss < 0 ? "red" : "green" }}>${profitLoss}</strong></p>
+</div>
+
+
 
 
     </div>
