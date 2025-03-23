@@ -36,7 +36,7 @@ const Portfolio = () => {
       label: "CRYPTO",
       coins: [
         { date: 'Date', invested: 'Invested ($)', ppt: 'Price Per Token ($)', name: "Coins", amount: "Quantity", isHeading: true, currentPrice: "Current Price" },
-        { date: '14/03/25', invested: '500', ppt: '0.002317', name: "KLV", amount: "215796", currentPrice: prices.KLV ? `$${prices.KLV}` : "Loading..." },  // ✅ Dynamic KLV price
+        { date: '14/03/25', invested: '500', ppt: '0.0023', name: "KLV", amount: "215796", currentPrice: prices.KLV ? `$${prices.KLV}` : "Loading..." },  // ✅ Dynamic KLV price
         { date: '13/03/25', invested: '500', ppt: '2.224', name: "XRP", amount: "224.82", currentPrice: prices.XRP ? `$${prices.XRP}` : "Loading..." },  // ✅ Dynamic XRP price
       ],
     },
