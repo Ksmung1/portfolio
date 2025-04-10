@@ -28,6 +28,7 @@ const Portfolio = () => {
         { date: "Date", name: "Coin", amount: "Quantity", isHeading: true },
         { date: "13/03/25", name: "USDT", amount: "$1000" },
         { date: "06/04/25", name: "USDT", amount: "$1000" },
+        { date: "10/04/25", name: "USDT", amount: "$1000" },
       ],
     },
     {
