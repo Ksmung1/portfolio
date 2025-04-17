@@ -21,6 +21,7 @@ const Portfolio = () => {
         { date: "13/03/25", name: "USDT", amount: "$1000" },
         { date: "06/04/25", name: "USDT", amount: "$1000" },
         { date: "10/04/25", name: "USDT", amount: "$1000" },
+        { date: "17/04/25", name: "USDT", amount: "$1000" },
       ],
     },
     {
