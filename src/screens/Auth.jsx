@@ -1,77 +1,157 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useUser } from "../context/UserContext"; // Import UserContext
+import { useUser } from "../context/UserContext";
+
+const WELCOME_MESSAGE = "Hello, this is Black Diamond,\nyour trusted Fund Manager!";
+const PROMPT_MESSAGE = "Please enter your Code.";
 
 const Auth = () => {
-  const nav = useNavigate();
+  const navigate = useNavigate();
   const { setUser } = useUser();
+  const codeInputRef = useRef(null);
   const [code, setCode] = useState("");
   const [welcomeText, setWelcomeText] = useState("");
   const [promptText, setPromptText] = useState("");
-  const [showCursor, setShowCursor] = useState(false); // To handle blinking cursor
-
-  const welcomeMessage = "Hello, this is Black Diamond, \n your trusted Fund Manager! ";
-
-  const promptMessage = `Please enter your Code.`;
-
-  // Typewriter effect function
-  const typeWriter = (message, setter, onComplete) => {
-    let index = 0;
-    let text = "";
-
-    const interval = setInterval(() => {
-      text += message.charAt(index);
-      setter(text);
-      index++;
-
-      if (index >= message.length) {
-        clearInterval(interval);
-        if (onComplete) onComplete();
-      }
-    }, 50);
-  };
+  const [isReady, setIsReady] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    typeWriter(welcomeMessage, setWelcomeText, () => {
-      typeWriter(promptMessage, setPromptText, () => {
-        setShowCursor(true); // Show blinking cursor after typing
-      });
-    });
-  }, [promptMessage]);
+    let cancelled = false;
+    const timers = new Set();
 
-  const handleClick = () => {
-    if (code === "007") {
-      setUser(true);
-      nav("/dashboard");
-    } else {
-      alert("Incorrect Code. Unauthorized!");
-      setUser(null);
-      setCode("");
-      nav("/");
-    }
+    const wait = (duration) =>
+      new Promise((resolve) => {
+        const timer = window.setTimeout(() => {
+          timers.delete(timer);
+          resolve();
+        }, duration);
+        timers.add(timer);
+      });
+
+    const typeMessage = async (message, setter, speed) => {
+      for (let index = 1; index <= message.length; index += 1) {
+        if (cancelled) return;
+        setter(message.slice(0, index));
+        await wait(speed);
+      }
+    };
+
+    const runIntro = async () => {
+      await typeMessage(WELCOME_MESSAGE, setWelcomeText, 42);
+      await wait(350);
+      await typeMessage(PROMPT_MESSAGE, setPromptText, 28);
+
+      if (!cancelled) setIsReady(true);
+    };
+
+    runIntro();
+
+    return () => {
+      cancelled = true;
+      timers.forEach((timer) => window.clearTimeout(timer));
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isReady) codeInputRef.current?.focus();
+  }, [isReady]);
+
+  const handleCodeChange = (event) => {
+    setCode(event.target.value.replace(/\D/g, "").slice(0, 3));
+    if (error) setError("");
   };
 
-  return (
-    <div className="auth-screen flex-col mid relative">
-      <img src="/black-diamond.png"  alt="imafe" style={{marginBottom:'60px'}}/>
-      <p className="typewriter-text type-text-1" style={{whiteSpace:"pre-line"}}>{welcomeText}</p>
-      <p className="typewriter-text" style={{whiteSpace:"pre-line", textAlign: 'center'}}>
-        {promptText}
-        {showCursor && <span className="blinking">|</span>}
-      </p>
-      <input
-        type="password"
-        name="login-code"
-        id="login-code"
-        placeholder="Code"
-        value={code}
-        onChange={(e) => setCode(e.target.value)}
-      />
-      <button onClick={handleClick}>Secret Code</button>
-      <p onClick={()=>nav('/about')} className="point " style={{border: '1px solid white', padding:'5px', borderRadius:'10px', marginTop:'100px'}}>More about me...</p>
+  const handleSubmit = (event) => {
+    event.preventDefault();
 
-    </div>
-    
+    if (code === "007") {
+      setUser(true);
+      navigate("/dashboard");
+      return;
+    }
+
+    setUser(null);
+    setCode("");
+    setError("That access code is not recognized. Please try again.");
+    codeInputRef.current?.focus();
+  };
+
+  const introComplete = welcomeText === WELCOME_MESSAGE;
+
+  return (
+    <main className="auth-screen">
+      <div className="auth-glow auth-glow-one" />
+      <div className="auth-glow auth-glow-two" />
+
+      <section className="auth-card" aria-labelledby="auth-title">
+        <header className="auth-brand">
+          <div className="auth-logo-frame">
+            <img src="/black-diamond.png" alt="Black Diamond" />
+          </div>
+        </header>
+
+        <div className="auth-copy" aria-live="polite">
+          <span className="auth-overline">Secure access</span>
+          <h1 id="auth-title">
+            {welcomeText}
+            {!introComplete && <span className="typing-cursor" aria-hidden="true" />}
+          </h1>
+          <p>
+            {promptText}
+            {introComplete && !isReady && (
+              <span className="typing-cursor prompt-cursor" aria-hidden="true" />
+            )}
+          </p>
+        </div>
+
+        <form
+          className={`auth-form ${isReady ? "is-ready" : ""}`}
+          onSubmit={handleSubmit}
+        >
+          <label htmlFor="login-code">Access code</label>
+          <div className={`auth-input-shell ${error ? "has-error" : ""}`}>
+            <span className="auth-lock" aria-hidden="true" />
+            <input
+              ref={codeInputRef}
+              type="password"
+              inputMode="numeric"
+              autoComplete="current-password"
+              name="login-code"
+              id="login-code"
+              maxLength={3}
+              placeholder="•••"
+              value={code}
+              onChange={handleCodeChange}
+              disabled={!isReady}
+              aria-invalid={Boolean(error)}
+              aria-describedby={error ? "auth-error" : undefined}
+            />
+          </div>
+          <div className="auth-form-meta">
+            <span>3-digit private key</span>
+            <span>{code.length}/3</span>
+          </div>
+          {error && (
+            <p className="auth-error" id="auth-error" role="alert">
+              {error}
+            </p>
+          )}
+          <button type="submit" disabled={!isReady || code.length !== 3}>
+            <span>Unlock portfolio</span>
+            <span className="auth-arrow" aria-hidden="true">→</span>
+          </button>
+        </form>
+
+        <button className="auth-about" type="button" onClick={() => navigate("/about")}>
+          About Black Diamond <span aria-hidden="true">↗</span>
+        </button>
+
+        <footer className="auth-security">
+          <span className="security-dot" />
+          Local private session
+        </footer>
+      </section>
+    </main>
   );
 };
 

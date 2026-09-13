@@ -1,282 +1,321 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
-  BarChart,
   Bar,
+  BarChart,
+  CartesianGrid,
+  Legend,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  Tooltip,
-  ResponsiveContainer,
 } from "recharts";
+import { portfolioData } from "../data/portfolioData";
+
+const currencyFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+const quantityFormatter = new Intl.NumberFormat("en-US", {
+  maximumFractionDigits: 8,
+});
+
+const dateFormatter = new Intl.DateTimeFormat("en-GB", {
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+  timeZone: "UTC",
+});
+
+const monthFormatter = new Intl.DateTimeFormat("en-GB", {
+  month: "short",
+  year: "numeric",
+  timeZone: "UTC",
+});
+
+const formatPrice = (value) => {
+  if (value === null || value === undefined) return "Loading…";
+  const maximumFractionDigits = value < 0.01 ? 6 : value < 1 ? 4 : 2;
+
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits,
+  }).format(value);
+};
+
+const formatCell = (value, format) => {
+  if (value === null || value === undefined) return "—";
+  if (format === "currency") return currencyFormatter.format(value);
+  if (format === "quantity") return quantityFormatter.format(value);
+  if (format === "price") return formatPrice(value);
+  if (format === "date") {
+    const isMonthOnly = /^\d{4}-\d{2}$/.test(value);
+    const normalizedDate = isMonthOnly ? `${value}-01` : value;
+    const formatter = isMonthOnly ? monthFormatter : dateFormatter;
+    return formatter.format(new Date(`${normalizedDate}T00:00:00Z`));
+  }
+  return value;
+};
+
+const DataTable = ({ section, prices = {} }) => (
+  <section className={`portfolio-section portfolio-section-${section.id}`}>
+    <div className="section-heading">
+      <div>
+        <span className="section-kicker">Portfolio ledger</span>
+        <h2>{section.label}</h2>
+      </div>
+      <span className="entry-count">
+        {section.rows.length} {section.rows.length === 1 ? "entry" : "entries"}
+      </span>
+    </div>
+
+    <div className="portfolio-table-wrap">
+      <table className="portfolio-table">
+        <thead>
+          <tr>
+            {section.columns.map((column) => (
+              <th key={column.key}>{column.label}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {section.rows.map((row) => (
+            <tr key={row.id}>
+              {section.columns.map((column) => {
+                const value =
+                  column.key === "currentPrice" ? prices[row.symbol] : row[column.key];
+
+                return (
+                  <td key={column.key} data-label={column.label}>
+                    {column.format === "asset" ? (
+                      <span className="asset-cell">
+                        <span className={`coin-mark coin-mark-${row.symbol.toLowerCase()}`}>
+                          {row.symbol.slice(0, 1)}
+                        </span>
+                        <strong>{row.symbol}</strong>
+                      </span>
+                    ) : (
+                      <span className={column.key === "currentPrice" ? "live-price" : ""}>
+                        {formatCell(value, column.format)}
+                      </span>
+                    )}
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+);
 
 const Portfolio = () => {
-  const [prices, setPrices] = useState({ XRP: null, KLV: null });
-  const [totalValue, setTotalValue] = useState(0);
-  const [profitLoss, setProfitLoss] = useState(0);
+  const [prices, setPrices] = useState({});
+  const [priceStatus, setPriceStatus] = useState("loading");
+  const { deposits, cryptoAssets, reservedAssets, owner } = portfolioData;
 
-  const [portfolioData, setPortfolioData] = useState([
-    {
-      label: "DEPOSITS",
-      coins: [
-        { date: "Date", name: "Coin", amount: "Quantity", isHeading: true },
-        { date: "13/03/25", name: "USDT", amount: "$1000" },
-        { date: "06/04/25", name: "USDT", amount: "$1000" },
-        { date: "10/04/25", name: "USDT", amount: "$1000" },
-        { date: "17/04/25", name: "USDT", amount: "$1000" },
-      ],
-    },
-    {
-      label: "CRYPTO",
-      coins: [
-        {
-          date: "Date",
-          invested: "Invested ($)",
-          ppt: "Buying Price ($)",
-          name: "Coins",
-          amount: "Quantity",
-          isHeading: true,
-          currentPrice: "Current Price",
-        },
-        {
-          date: "14/03/25",
-          invested: "500",
-          ppt: "0.0023",
-          name: "KLV",
-          amount: "215796",
-          currentPrice: "Loading...",
-        },
-        {
-          date: "13/03/25",
-          invested: "500",
-          ppt: "2.224",
-          name: "XRP",
-          amount: "224.82",
-          currentPrice: "Loading...",
-        },
-      ],
-    },
-    {
-      label: "RESERVED DOLLAR",
-      coins: [{ name: "USDT", amount: "$0" }],
-    },
-  ]);
-
-  // Fetch live prices
   useEffect(() => {
-    const fetchPrices = () => {
-      fetch(
-        "https://api.coingecko.com/api/v3/simple/price?ids=ripple,klever&vs_currencies=usd"
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          const updatedPrices = {
-            XRP: data.ripple.usd,
-            KLV: data.klever.usd,
-          };
-          setPrices(updatedPrices);
+    const controller = new AbortController();
+    const priceIds = cryptoAssets.rows.map((asset) => asset.coinGeckoId).join(",");
+    let requestInFlight = false;
 
-          // Update live prices in portfolioData
-          setPortfolioData((prevData) =>
-            prevData.map((container) => {
-              if (container.label !== "CRYPTO") return container;
-              return {
-                ...container,
-                coins: container.coins.map((coin) => {
-                  if (coin.isHeading) return coin;
-                  const live =
-                    updatedPrices[coin.name] !== undefined
-                      ? `$${updatedPrices[coin.name]}`
-                      : "Loading...";
-                  return { ...coin, currentPrice: live };
-                }),
-              };
-            })
-          );
-        })
-        .catch((error) => console.error("Error fetching prices:", error));
+    const fetchPrices = async () => {
+      if (requestInFlight) return;
+      requestInFlight = true;
+
+      try {
+        const response = await fetch(
+          `https://api.coingecko.com/api/v3/simple/price?ids=${priceIds}&vs_currencies=usd&precision=full&_=${Date.now()}`,
+          {
+            signal: controller.signal,
+            cache: "no-store",
+          }
+        );
+
+        if (!response.ok) throw new Error(`Price request failed: ${response.status}`);
+
+        const data = await response.json();
+        const nextPrices = Object.fromEntries(
+          cryptoAssets.rows.map((asset) => {
+            const livePrice = Number(data[asset.coinGeckoId]?.usd);
+            return [asset.symbol, Number.isFinite(livePrice) && livePrice >= 0 ? livePrice : null];
+          })
+        );
+
+        setPrices(nextPrices);
+        setPriceStatus("live");
+      } catch (error) {
+        if (error.name !== "AbortError") {
+          console.error("Unable to fetch crypto prices:", error);
+          setPriceStatus("error");
+        }
+      } finally {
+        requestInFlight = false;
+      }
+    };
+
+    const refreshVisiblePrices = () => {
+      if (document.visibilityState === "visible") fetchPrices();
     };
 
     fetchPrices();
-    const interval = setInterval(fetchPrices, 5000);
-    return () => clearInterval(interval);
-  }, []);
+    const interval = window.setInterval(fetchPrices, 30000);
+    window.addEventListener("focus", fetchPrices);
+    document.addEventListener("visibilitychange", refreshVisiblePrices);
 
-  useEffect(() => {
-    const calculateProfit = () => {
-      let totalDeposits = 0;
-      let totalUsedUSDT = 0;
-      let totalCryptoValue = 0;
-
-      portfolioData.forEach((container) => {
-        if (container.label === "DEPOSITS") {
-          container.coins.forEach((coin) => {
-            if (!coin.isHeading) {
-              totalDeposits += Number(coin.amount.replace("$", ""));
-            }
-          });
-        }
-
-        if (container.label === "CRYPTO") {
-          container.coins.forEach((coin) => {
-            if (!coin.isHeading) {
-              totalUsedUSDT += Number(coin.invested);
-              if (coin.currentPrice.includes("$")) {
-                const price = parseFloat(coin.currentPrice.replace("$", ""));
-                const qty = parseFloat(coin.amount);
-                totalCryptoValue += price * qty;
-              }
-            }
-          });
-        }
-      });
-
-      const reserved = totalDeposits - totalUsedUSDT;
-      const total = totalCryptoValue + reserved;
-      const pnl = total - totalDeposits;
-
-      // Update reserve section
-      setPortfolioData((prevData) =>
-        prevData.map((container) => {
-          if (container.label === "RESERVED DOLLAR") {
-            return {
-              ...container,
-              coins: [{ name: "USDT", amount: `$${reserved.toFixed(2)}` }],
-            };
-          }
-          return container;
-        })
-      );
-
-      setTotalValue(total.toFixed(2));
-      setProfitLoss(pnl.toFixed(2));
+    return () => {
+      controller.abort();
+      window.clearInterval(interval);
+      window.removeEventListener("focus", fetchPrices);
+      document.removeEventListener("visibilitychange", refreshVisiblePrices);
     };
+  }, [cryptoAssets.rows]);
 
-    if (prices.XRP && prices.KLV) {
-      calculateProfit();
-    }
-  }, [portfolioData, prices]);
+  const totals = useMemo(() => {
+    const deposited = deposits.rows.reduce((sum, row) => sum + row.amountUsd, 0);
+    const invested = cryptoAssets.rows.reduce((sum, row) => sum + row.investedUsd, 0);
+    const reserved = deposited - invested;
+    const pricesReady = cryptoAssets.rows.every((asset) => prices[asset.symbol] != null);
+    const cryptoValue = pricesReady
+      ? cryptoAssets.rows.reduce(
+          (sum, asset) => sum + prices[asset.symbol] * asset.quantity,
+          0
+        )
+      : null;
+    const profitLoss = cryptoValue === null ? null : cryptoValue - invested;
+    const totalValue = cryptoValue === null ? null : cryptoValue + reserved;
 
-  const cryptoData = portfolioData.find((c) => c.label === "CRYPTO");
+    return {
+      deposited,
+      invested,
+      reserved,
+      profitLoss,
+      totalValue,
+    };
+  }, [cryptoAssets.rows, deposits.rows, prices]);
 
-  const investedAmounts = cryptoData
-    ? cryptoData.coins
-        .filter((coin) => !coin.isHeading)
-        .map((coin) => ({ name: coin.name, invested: Number(coin.invested) }))
-    : [];
+  const chartData = cryptoAssets.rows.map((asset) => ({
+    name: asset.symbol,
+    invested: asset.investedUsd,
+    currentValue:
+      prices[asset.symbol] == null
+        ? null
+        : prices[asset.symbol] * asset.quantity,
+  }));
 
-  const chartData = [
-    {
-      name: "XRP",
-      invested: investedAmounts.find((coin) => coin.name === "XRP")?.invested || 0,
-      fill: "green",
-    },
-    {
-      name: "KLV",
-      invested: investedAmounts.find((coin) => coin.name === "KLV")?.invested || 0,
-      fill: "blue",
-    },
-    {
-      name: "USDT",
-      invested: 0,
-      fill: "white",
-    },
-  ];
+  const profitClass =
+    totals.profitLoss === null
+      ? "neutral"
+      : totals.profitLoss >= 0
+      ? "positive"
+      : "negative";
+
+  const reservedSection = {
+    ...reservedAssets,
+    rows: [
+      {
+        id: "reserved-usdt",
+        symbol: "USDT",
+        amountUsd: totals.reserved,
+      },
+    ],
+  };
 
   return (
-    <div className="portfolio-screen flex-col mid">
-      <h1>PORTFOLIO</h1>
-      <h2>VIP 007</h2>
+    <main className="portfolio-screen">
+      <header className="portfolio-hero">
+        <div>
+          <p className="eyebrow">Personal portfolio</p>
+          <h1>Asset overview</h1>
+          <p className="portfolio-owner">{owner} · Private tracker</p>
+        </div>
+        <div className={`price-status ${priceStatus}`}>
+          <span />
+          {priceStatus === "live"
+            ? "Prices live"
+            : priceStatus === "error"
+            ? "Price feed unavailable"
+            : "Connecting to prices"}
+        </div>
+      </header>
 
-      {portfolioData.map((container, index) => {
-        const allKeys = [
-          ...new Set(container.coins.flatMap(Object.keys)),
-        ].filter((key) => key !== "isHeading");
-
-        return (
-          <div key={index} className="container">
-            <div className="label">
-              <p>{container.label}</p>
-            </div>
-
-            <div className="box">
-              {container.coins.some((coin) => coin.isHeading) && (
-                <div
-                  className="coin-row heading mid"
-                  data-has-date={allKeys.includes("date")}
-                  data-has-invested={allKeys.includes("invested")}
-                  data-has-ppt={allKeys.includes("ppt")}
-                  data-has-currentPrice={allKeys.includes("currentPrice")}
-                >
-                  {allKeys.map((key, i) => (
-                    <span key={i} className={`coin-${key}`}>
-                      {container.coins[0][key] || "-"}
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              {container.coins
-                .filter((coin) => !coin.isHeading)
-                .map((coin, i) => (
-                  <div
-                    key={i}
-                    className="coin-row mid"
-                    data-has-date={allKeys.includes("date")}
-                    data-has-invested={allKeys.includes("invested")}
-                    data-has-ppt={allKeys.includes("ppt")}
-                    data-has-currentPrice={allKeys.includes("currentPrice")}
-                  >
-                    {allKeys.map((key, j) => (
-                      <span key={j} className={`coin-${key}`}>
-                        {coin[key] || "-"}
-                      </span>
-                    ))}
-                  </div>
-                ))}
-            </div>
-          </div>
-        );
-      })}
-
-      <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-          <XAxis dataKey="name" />
-          <YAxis />
-          <Tooltip />
-          <Bar dataKey="invested" barSize={40} />
-        </BarChart>
-      </ResponsiveContainer>
-
-      <div className="label flex-row gap" style={{ background: "green", padding: "10px" }}>
-        <p style={{ background: "green" }} className="left">
-          TOTAL ASSETS VALUE
-        </p>
-        <p>
-          <strong style={{ background: "green" }}>${totalValue}</strong>
-        </p>
-      </div>
-
-      <div
-        className="label flex-row gap"
-        style={{
-          background: profitLoss < 0 ? "red" : "green",
-          padding: "10px",
-        }}
-      >
-        <p
-          style={{ background: profitLoss < 0 ? "red" : "green" }}
-          className="left"
-        >
-          PROFIT/LOSS
-        </p>
-        <p>
-          <strong
-            style={{ background: profitLoss < 0 ? "red" : "green" }}
-          >
-            ${profitLoss}
+      <section className="summary-grid" aria-label="Portfolio summary">
+        <article className="summary-card primary-card">
+          <span>Total asset value</span>
+          <strong>
+            {totals.totalValue === null ? "—" : currencyFormatter.format(totals.totalValue)}
           </strong>
-        </p>
-      </div>
-    </div>
+          <small>Total deposits plus or minus profit/loss</small>
+        </article>
+        <article className={`summary-card ${profitClass}`}>
+          <span>Profit / loss</span>
+          <strong>
+            {totals.profitLoss === null ? "—" : currencyFormatter.format(totals.profitLoss)}
+          </strong>
+          <small>
+            Current crypto value minus {currencyFormatter.format(totals.invested)} invested
+          </small>
+        </article>
+        <article className="summary-card">
+          <span>Reserved USDT</span>
+          <strong>{currencyFormatter.format(totals.reserved)}</strong>
+          <small>{currencyFormatter.format(totals.invested)} currently invested</small>
+        </article>
+      </section>
+
+      <DataTable section={cryptoAssets} prices={prices} />
+      <DataTable section={reservedSection} />
+      <DataTable section={deposits} />
+
+      {/* <section className="portfolio-section allocation-section">
+        <div className="section-heading">
+          <div>
+            <span className="section-kicker">Position check</span>
+            <h2>Invested vs live holding value</h2>
+          </div>
+        </div>
+        <div className="portfolio-chart">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData} margin={{ top: 12, right: 8, left: 0, bottom: 0 }}>
+              <CartesianGrid stroke="#242a35" vertical={false} />
+              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "#98a2b3" }} />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: "#667085" }}
+                tickFormatter={(value) => `$${value}`}
+                width={58}
+              />
+              <Tooltip
+                cursor={{ fill: "rgba(255,255,255,0.03)" }}
+                formatter={(value) => currencyFormatter.format(value)}
+                contentStyle={{
+                  background: "#121722",
+                  border: "1px solid #2a3140",
+                  borderRadius: 10,
+                }}
+              />
+              <Legend
+                iconType="circle"
+                wrapperStyle={{ color: "#98a2b3", fontSize: 11, paddingTop: 8 }}
+              />
+              <Bar dataKey="invested" name="Invested" fill="#5965f2" radius={[5, 5, 0, 0]} />
+              <Bar
+                dataKey="currentValue"
+                name="Live holding value"
+                fill="#35d07f"
+                radius={[5, 5, 0, 0]}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </section> */}
+    </main>
   );
 };
 
